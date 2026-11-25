@@ -59,7 +59,7 @@ Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Ag
 - **No Finder (Mac):** de duplo clique em `Abrir-Mac.command` dentro da pasta `verify-bridge/`.
 - **Ou no Terminal:**
 ```bash
-cd ~/Desktop/meu-projeto/verify-bridge
+cd verify-bridge   # a pasta extraida do .zip ou clonada
 python3 -m verify_bridge ui
 ```
 Abre automaticamente em `http://127.0.0.1:8765`, onde voce linka a **IA 1 (Criadora)** e a **IA 2 (Verificadora)** (assinatura Claude/Google/ChatGPT sem chave de API, Modo Chat, APIs Gemini/OpenAI/Ollama/Claude ou CLI local), envia o `.md` + arquivos e acompanha as rodadas ao vivo.
