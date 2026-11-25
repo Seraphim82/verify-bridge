@@ -1,5 +1,9 @@
 # verify-bridge
 
+[![Testes](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml/badge.svg)](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml)
+
+**Baixar:** veja a [ultima Release](https://github.com/Seraphim82/verify-bridge/releases/latest) (`.zip` pronto para macOS, Windows e Linux + PDF de apresentacao).
+
 Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Agente Verificador** de IA, com loop automatico de correcoes.
 
 - **Stack:** Python 3.10+ (somente biblioteca padrao, **zero dependencias externas**).
