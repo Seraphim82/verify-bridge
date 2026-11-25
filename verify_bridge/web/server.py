@@ -151,13 +151,17 @@ class VerifyBridgeServer(ThreadingHTTPServer):
 
     def remove_session(self, run_id: str) -> None:
         with self._sessions_lock:
-            sess = self._sessions.pop(run_id, None)
+            sess = self._sessions.get(run_id)
             timer = self._expiry_timers.pop(run_id, None)
         if timer is not None:
             timer.cancel()
         if sess is not None:
             sess.cancel_event.set()
             shutil.rmtree(sess.workdir, ignore_errors=True)
+        # So sai da lista depois de a pasta ser apagada: quem ve a execucao
+        # sumir pode contar que os arquivos temporarios ja foram removidos.
+        with self._sessions_lock:
+            self._sessions.pop(run_id, None)
 
     def cleanup(self) -> None:
         with self._sessions_lock:
