@@ -1,6 +1,6 @@
 [project]
 name = "verify-bridge"
-version = "0.3.2"
+version = "0.3.3"
 description = "Coletor e ponte de verificacao cega entre agente criador e agente verificador de IA"
 license = {text = "MIT"}
 requires-python = ">=3.10"

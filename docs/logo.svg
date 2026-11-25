@@ -1,64 +1,146 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Verify Bridge">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="24 0 1560 740" role="img" aria-label="Verify Bridge">
   <defs>
-    <!-- Inox: metal escovado com reflexos -->
-    <linearGradient id="inox" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f4f6f8"/>
-      <stop offset="0.28" stop-color="#b9c0c7"/>
-      <stop offset="0.5" stop-color="#eef1f3"/>
-      <stop offset="0.72" stop-color="#9aa3ac"/>
-      <stop offset="1" stop-color="#d9dee2"/>
+    <!-- Sinais < > em azul turquesa #037A8C -->
+    <linearGradient id="sinalFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5fe3f0"/>
+      <stop offset="0.45" stop-color="#037A8C"/>
+      <stop offset="1" stop-color="#025a69"/>
     </linearGradient>
-    <linearGradient id="inoxVert" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#eef1f3"/>
-      <stop offset="0.5" stop-color="#a7afb7"/>
-      <stop offset="1" stop-color="#cfd5da"/>
+    <linearGradient id="sinalFundo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#013f4a"/>
+      <stop offset="1" stop-color="#012a32"/>
     </linearGradient>
-    <!-- Check esmeralda #009D71 com brilho -->
-    <linearGradient id="esmeralda" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#19c08f"/>
-      <stop offset="0.55" stop-color="#009D71"/>
-      <stop offset="1" stop-color="#007a58"/>
+
+    <!-- Inox espelhado -->
+    <linearGradient id="torre" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c8792"/>
+      <stop offset="0.35" stop-color="#ffffff"/>
+      <stop offset="0.65" stop-color="#bcc5cd"/>
+      <stop offset="1" stop-color="#7c8792"/>
     </linearGradient>
-    <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#003d2c" flood-opacity="0.35"/>
+    <linearGradient id="torreLado" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b7782"/>
+      <stop offset="1" stop-color="#3f4952"/>
+    </linearGradient>
+    <linearGradient id="cabo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#a3adb6"/>
+      <stop offset="0.3" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#aeb8c1"/>
+      <stop offset="0.7" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#a3adb6"/>
+    </linearGradient>
+    <linearGradient id="deckTopo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9d1d8"/>
+      <stop offset="0.3" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#b3bdc6"/>
+      <stop offset="0.8" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#aab4bd"/>
+    </linearGradient>
+    <linearGradient id="deckFrente" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6f8fa"/>
+      <stop offset="0.5" stop-color="#8f9aa5"/>
+      <stop offset="1" stop-color="#c9d0d6"/>
+    </linearGradient>
+
+    <!-- Check esmeralda #009D71, solido e vivo -->
+    <linearGradient id="checkFace" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6ff5c8"/>
+      <stop offset="0.35" stop-color="#17c792"/>
+      <stop offset="0.7" stop-color="#009D71"/>
+      <stop offset="1" stop-color="#008a63"/>
+    </linearGradient>
+    <linearGradient id="checkFundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00694c"/>
+      <stop offset="1" stop-color="#003a29"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#19d49b" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#009D71" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#009D71" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="brilho" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0.05  0 0 0 0 0.85  0 0 0 0 0.6  0 0 0 0.7 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#0b2a22" flood-opacity="0.3"/>
+    </filter>
+    <filter id="suave"><feGaussianBlur stdDeviation="2"/></filter>
+
+    <!-- pecas da ponte -->
+    <g id="caboPrincipal">
+      <path d="M628 150 Q 805 380 978 150" fill="none" stroke="url(#cabo)" stroke-width="16" stroke-linecap="round"/>
+      <path d="M628 150 Q 805 380 978 150" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.9"/>
+    </g>
+    <g id="estaisEsq">
+      <path d="M624 150 L 440 482" fill="none" stroke="url(#cabo)" stroke-width="16" stroke-linecap="round"/>
+    </g>
+    <g id="estaisDir">
+      <path d="M982 150 L 1166 482" fill="none" stroke="url(#cabo)" stroke-width="16" stroke-linecap="round"/>
+    </g>
+    <g id="tabuleiro">
+      <path d="M432 470 Q 805 300 1176 470 L 1176 486 Q 805 316 432 486 Z" fill="url(#deckTopo)"/>
+      <path d="M432 486 Q 805 316 1176 486 L 1176 516 Q 805 346 432 516 Z" fill="url(#deckFrente)"/>
+      <path d="M432 486 Q 805 316 1176 486" fill="none" stroke="#ffffff" stroke-width="3"/>
+    </g>
+    <g id="torreEsq">
+      <path d="M642 146 L 654 137 L 654 568 L 642 577 Z" fill="url(#torreLado)"/>
+      <rect x="614" y="146" width="28" height="431" rx="6" fill="url(#torre)"/>
+      <path d="M614 146 L 626 137 L 654 137 L 642 146 Z" fill="#ffffff"/>
+      <rect x="619" y="152" width="5" height="418" fill="#ffffff" opacity="0.8"/>
+    </g>
+    <g id="torreDir">
+      <path d="M992 146 L 1004 137 L 1004 568 L 992 577 Z" fill="url(#torreLado)"/>
+      <rect x="964" y="146" width="28" height="431" rx="6" fill="url(#torre)"/>
+      <path d="M964 146 L 976 137 L 1004 137 L 992 146 Z" fill="#ffffff"/>
+      <rect x="969" y="152" width="5" height="418" fill="#ffffff" opacity="0.8"/>
+    </g>
+    <mask id="corte" maskUnits="userSpaceOnUse" x="-100" y="-100" width="1800" height="940">
+      <rect x="-100" y="-100" width="1800" height="940" fill="#fff"/>
+      <path d="M581 223 L 741 465 L 1026 223" fill="none" stroke="#000" stroke-width="92" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M581 223 L 741 465 L 1026 223" transform="translate(8 10)" fill="none" stroke="#000" stroke-width="92" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
   </defs>
 
-  <!-- Ponte em inox, translucida, ao fundo -->
-  <g opacity="0.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- torres -->
-    <rect x="132" y="118" width="22" height="250" rx="5" fill="url(#inoxVert)" stroke="#8c959e" stroke-width="2"/>
-    <rect x="358" y="118" width="22" height="250" rx="5" fill="url(#inoxVert)" stroke="#8c959e" stroke-width="2"/>
-    <!-- cabos principais -->
-    <path d="M40 300 Q 92 210 143 122" stroke="url(#inox)" stroke-width="9"/>
-    <path d="M143 122 Q 256 330 369 122" stroke="url(#inox)" stroke-width="9"/>
-    <path d="M369 122 Q 420 210 472 300" stroke="url(#inox)" stroke-width="9"/>
-    <!-- pendurais -->
-    <g stroke="#a9b1b9" stroke-width="4">
-      <line x1="184" y1="176" x2="184" y2="300"/>
-      <line x1="220" y1="206" x2="220" y2="300"/>
-      <line x1="256" y1="217" x2="256" y2="300"/>
-      <line x1="292" y1="206" x2="292" y2="300"/>
-      <line x1="328" y1="176" x2="328" y2="300"/>
-      <line x1="80" y1="234" x2="80" y2="300"/>
-      <line x1="112" y1="180" x2="112" y2="300"/>
-      <line x1="400" y1="180" x2="400" y2="300"/>
-      <line x1="432" y1="234" x2="432" y2="300"/>
-    </g>
-    <!-- tabuleiro -->
-    <rect x="24" y="298" width="464" height="24" rx="6" fill="url(#inox)" stroke="#8c959e" stroke-width="2"/>
+  <!-- Aura -->
+  <ellipse cx="804" cy="360" rx="560" ry="330" fill="url(#aura)"/>
+
+  <!-- ===== < > em azul turquesa 3D ===== -->
+  <g filter="url(#sombra)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M324 186 L 159 360 L 324 534" transform="translate(9 11)" stroke="url(#sinalFundo)" stroke-width="32"/>
+    <path d="M1284 186 L 1449 360 L 1284 534" transform="translate(9 11)" stroke="url(#sinalFundo)" stroke-width="32"/>
+    <path d="M324 186 L 159 360 L 324 534" stroke="url(#sinalFace)" stroke-width="32"/>
+    <path d="M1284 186 L 1449 360 L 1284 534" stroke="url(#sinalFace)" stroke-width="32"/>
+    <path d="M319 189 L 164 352" stroke="#ffffff" stroke-width="7" opacity="0.6" filter="url(#suave)"/>
+    <path d="M1289 189 L 1444 352" stroke="#ffffff" stroke-width="7" opacity="0.6" filter="url(#suave)"/>
   </g>
 
-  <!-- Check esmeralda atravessando a ponte -->
-  <path d="M118 262 L 212 352 L 404 150"
-        fill="none" stroke="url(#esmeralda)" stroke-width="58"
-        stroke-linecap="round" stroke-linejoin="round" filter="url(#sombra)"/>
-  <!-- brilho no check -->
-  <path d="M132 258 L 212 334 L 392 146"
-        fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="10"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- ===== Ponte: o check passa apagando por onde atravessa ===== -->
+  <g filter="url(#sombra)" mask="url(#corte)">
+    <use href="#tabuleiro"/>
+    <use href="#estaisEsq"/>
+    <use href="#estaisDir"/>
+    <use href="#torreDir"/>
+    <use href="#torreEsq"/>
+    <use href="#caboPrincipal"/>
+  </g>
 
-  <!-- Tabuleiro translucido por cima: o check atravessa a ponte -->
-  <rect x="24" y="298" width="464" height="24" rx="6" fill="url(#inox)" opacity="0.55"/>
-  <rect x="24" y="298" width="464" height="24" rx="6" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2"/>
+  <!-- ===== Check solido esmeralda ===== -->
+  <g filter="url(#brilho)">
+    <path d="M581 223 L 741 465 L 1026 223" transform="translate(8 10)" fill="none"
+          stroke="url(#checkFundo)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M581 223 L 741 465 L 1026 223" fill="none"
+          stroke="url(#checkFace)" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <path d="M576 215 L 737 454 L 1019 215" fill="none" stroke="#ffffff" stroke-opacity="0.5"
+        stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#suave)"/>
+  <circle cx="1019" cy="220" r="7" fill="#ffffff" opacity="0.9"/>
+
+  <!-- faiscas -->
+  <g fill="#ffffff">
+    <path d="M1084 144 l8 20 20 8 -20 8 -8 20 -8 -20 -20 -8 20 -8z"/>
+    <path d="M1134 202 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" opacity="0.8"/>
+  </g>
 </svg>

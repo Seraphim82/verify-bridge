@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/logo.svg" alt="Verify Bridge" width="160"></p>
+<p align="center"><img src="docs/logo-fundo-preto.png" alt="Verify Bridge" width="520"></p>
 
 <h1 align="center">Verify Bridge</h1>
 
