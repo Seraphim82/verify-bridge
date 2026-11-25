@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Bridge — Ponte Cega entre IAs</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">⇄</div>
+      <div>
+        <h1>Verify Bridge</h1>
+        <p>Linke duas IAs: o criador entrega, a ponte filtra código/justificativas e o verificador revisa em loop</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-example" class="btn btn-ghost" type="button">Carregar Exemplo (Peixe)</button>
+      <button id="btn-preview" class="btn btn-secondary" type="button">Testar Filtro Cego</button>
+      <button id="btn-start" class="btn btn-primary" type="button">▶ Iniciar Conversa</button>
+      <button id="btn-stop" class="btn btn-danger hidden" type="button">■ Parar</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- PAINEL DE CONEXAO DAS DUAS IAS -->
+    <section class="bridge-grid" aria-label="Conexão das duas IAs">
+      <!-- IA 1: CRIADORA -->
+      <div class="card agent-card creator-card">
+        <div class="card-header">
+          <span class="pill pill-creator">IA 1 · CRIADORA</span>
+          <span id="creator-env-hint" class="env-hint"></span>
+        </div>
+        <div class="field">
+          <label for="creator-provider">Provedor</label>
+          <select id="creator-provider">
+            <optgroup label="Assinatura (sem chave de API)">
+              <option value="sub_claude">Claude Pro/Max · Claude Code</option>
+              <option value="sub_antigravity">Google Gemini · Antigravity</option>
+              <option value="sub_codex">ChatGPT Plus/Pro · Codex</option>
+            </optgroup>
+            <optgroup label="Pelo chat no navegador">
+              <option value="chat">Modo Chat (copiar e colar)</option>
+            </optgroup>
+            <optgroup label="Chave de API (opcional)">
+              <option value="anthropic">Anthropic (Claude API)</option>
+              <option value="openai">OpenAI / Ollama / OpenRouter</option>
+              <option value="gemini">Google Gemini API</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option value="demo" selected>Simulador Offline (Demo Peixe)</option>
+              <option value="cli">Agente CLI personalizado</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="agent-fields" data-role="creator">
+          <div class="field field-sub hidden">
+            <div class="sub-status" id="creator-sub-status">Verificando assinatura...</div>
+            <div class="sub-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="creator-sub-login">Entrar</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="creator-sub-refresh">Atualizar status</button>
+            </div>
+          </div>
+          <div class="field field-chat hidden">
+            <label for="creator-chat">Chat usado</label>
+            <select id="creator-chat">
+              <option value="claude">Claude (claude.ai)</option>
+              <option value="chatgpt">ChatGPT (chatgpt.com)</option>
+              <option value="gemini">Gemini (gemini.google.com)</option>
+            </select>
+            <small>A cada rodada a tela mostra o pedido pronto para colar no chat e um campo para colar a resposta.</small>
+          </div>
+          <div class="field field-model hidden">
+            <label for="creator-model">Modelo</label>
+            <input id="creator-model" type="text" placeholder="ex.: gemini-2.5-flash" />
+          </div>
+          <div class="field field-key hidden">
+            <label for="creator-key">API Key (opcional se já estiver no ambiente)</label>
+            <input id="creator-key" type="password" autocomplete="off" placeholder="Cole sua chave (fica só em memória)" />
+          </div>
+          <div class="field field-url hidden">
+            <label for="creator-url">Base URL</label>
+            <input id="creator-url" type="text" placeholder="https://api.openai.com/v1/chat/completions" />
+          </div>
+          <div class="field field-cli hidden">
+            <label for="creator-cli">Comando CLI</label>
+            <input id="creator-cli" type="text" placeholder="ex.: meu-agente {correction_file}" />
+            <small>Placeholders: <code>{correction_file}</code>, <code>{report_file}</code>, <code>{iteration}</code></small>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTRO: PONTE CEGA -->
+      <div class="card bridge-center">
+        <div class="bridge-visual" id="bridge-visual">
+          <span class="node-dot creator-dot"></span>
+          <span class="wire"></span>
+          <span class="shield-badge" title="Filtro cego: sem código, sem justificativas">🛡️</span>
+          <span class="wire"></span>
+          <span class="node-dot verifier-dot"></span>
+        </div>
+        <div id="live-status" class="status-badge status-idle">Pronto para conectar</div>
+        <p id="live-message" class="status-detail">Escolha as duas IAs e inicie o loop.</p>
+
+        <div class="loop-controls">
+          <div class="mini-field">
+            <label for="max-iter">Máx. rodadas</label>
+            <input id="max-iter" type="number" min="1" max="15" value="5" />
+          </div>
+          <div class="mini-field">
+            <label for="stagnation">Estagnação</label>
+            <input id="stagnation" type="number" min="1" max="10" value="2" />
+          </div>
+        </div>
+        <div class="toggles">
+          <label class="checkbox-label">
+            <input id="allow-structured" type="checkbox" />
+            Permitir HTML/SVG/JSON
+          </label>
+          <label class="checkbox-label">
+            <input id="include-acceptable" type="checkbox" />
+            Mostrar aceitáveis no prompt
+          </label>
+        </div>
+      </div>
+
+      <!-- IA 2: VERIFICADORA -->
+      <div class="card agent-card verifier-card">
+        <div class="card-header">
+          <span class="pill pill-verifier">IA 2 · VERIFICADORA (CEGA)</span>
+          <span id="verifier-env-hint" class="env-hint"></span>
+        </div>
+        <div class="field">
+          <label for="verifier-provider">Provedor</label>
+          <select id="verifier-provider">
+            <optgroup label="Assinatura (sem chave de API)">
+              <option value="sub_claude">Claude Pro/Max · Claude Code</option>
+              <option value="sub_antigravity">Google Gemini · Antigravity</option>
+              <option value="sub_codex">ChatGPT Plus/Pro · Codex</option>
+            </optgroup>
+            <optgroup label="Pelo chat no navegador">
+              <option value="chat">Modo Chat (copiar e colar)</option>
+            </optgroup>
+            <optgroup label="Chave de API (opcional)">
+              <option value="anthropic">Anthropic (Claude API)</option>
+              <option value="openai">OpenAI / Ollama / OpenRouter</option>
+              <option value="gemini">Google Gemini API</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option value="demo" selected>Simulador Offline (Demo Peixe)</option>
+              <option value="cli">Agente CLI personalizado</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="agent-fields" data-role="verifier">
+          <div class="field field-sub hidden">
+            <div class="sub-status" id="verifier-sub-status">Verificando assinatura...</div>
+            <div class="sub-actions">
+              <button type="button" class="btn btn-secondary btn-sm" id="verifier-sub-login">Entrar</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="verifier-sub-refresh">Atualizar status</button>
+            </div>
+          </div>
+          <div class="field field-chat hidden">
+            <label for="verifier-chat">Chat usado</label>
+            <select id="verifier-chat">
+              <option value="claude">Claude (claude.ai)</option>
+              <option value="chatgpt">ChatGPT (chatgpt.com)</option>
+              <option value="gemini">Gemini (gemini.google.com)</option>
+            </select>
+            <small>A cada rodada a tela mostra o pedido pronto para colar no chat e um campo para colar a resposta.</small>
+          </div>
+          <div class="field field-model hidden">
+            <label for="verifier-model">Modelo</label>
+            <input id="verifier-model" type="text" placeholder="ex.: gemini-2.5-flash" />
+          </div>
+          <div class="field field-key hidden">
+            <label for="verifier-key">API Key (opcional se já estiver no ambiente)</label>
+            <input id="verifier-key" type="password" autocomplete="off" placeholder="Cole sua chave (fica só em memória)" />
+          </div>
+          <div class="field field-url hidden">
+            <label for="verifier-url">Base URL</label>
+            <input id="verifier-url" type="text" placeholder="https://api.openai.com/v1/chat/completions" />
+          </div>
+          <div class="field field-cli hidden">
+            <label for="verifier-cli">Comando CLI</label>
+            <input id="verifier-cli" type="text" placeholder="ex.: gemini-verify {packet_file} {workdir}" />
+            <small>Roda em pasta isolada só com <code>packet.md</code>, <code>REF-*</code> e <code>OUT-*</code></small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENTRADA: MARKDOWN + ARQUIVOS -->
+    <section class="card input-section">
+      <div class="section-header">
+        <h2>Entrada do Agente Criador (MD + Arquivos)</h2>
+        <div class="inline-actions">
+          <label class="btn btn-ghost btn-sm file-btn">
+            Importar .md
+            <input id="md-file-input" type="file" accept=".md,.txt,text/markdown,text/plain" hidden />
+          </label>
+          <button id="btn-clear" class="btn btn-ghost btn-sm" type="button">Limpar</button>
+        </div>
+      </div>
+
+      <div class="input-grid">
+        <div class="md-column">
+          <label for="markdown-input">Markdown com pedido inicial (justificativas e blocos de código serão removidos automaticamente)</label>
+          <textarea id="markdown-input" rows="9" placeholder="# Pedido Inicial&#10;Descreva o que o usuário pediu...&#10;&#10;## Justificativa (será removida automaticamente)&#10;..."></textarea>
+        </div>
+
+        <div class="files-column">
+          <div class="drop-box">
+            <div class="drop-header">
+              <span><strong>Referências do Usuário</strong> (<code>REF-*</code>)</span>
+              <label class="btn btn-secondary btn-sm file-btn">
+                + Adicionar
+                <input id="ref-files-input" type="file" multiple hidden />
+              </label>
+            </div>
+            <div id="ref-files-list" class="file-chips empty-chips">Nenhum arquivo de referência</div>
+          </div>
+
+          <div class="drop-box">
+            <div class="drop-header">
+              <span><strong>Entregas do Criador</strong> (<code>OUT-*</code>)</span>
+              <label class="btn btn-secondary btn-sm file-btn">
+                + Adicionar
+                <input id="out-files-input" type="file" multiple hidden />
+              </label>
+            </div>
+            <div id="out-files-list" class="file-chips empty-chips">Nenhum arquivo de entrega</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW DO FILTRO CEGO -->
+      <div id="preview-panel" class="preview-panel hidden">
+        <div class="preview-header">
+          <strong>Prévia do Filtro Cego (o que atravessa a ponte)</strong>
+          <button id="btn-close-preview" class="btn btn-ghost btn-sm" type="button">Fechar</button>
+        </div>
+        <div class="preview-grid">
+          <div>
+            <h4>Pacote cru enviado à IA Verificadora</h4>
+            <pre id="preview-packet" class="code-box"></pre>
+          </div>
+          <div>
+            <h4>Auditoria local (removido / bloqueado)</h4>
+            <pre id="preview-audit" class="code-box"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONVERSA AO VIVO ENTRE AS DUAS IAS -->
+    <section class="card conversation-section">
+      <div class="section-header">
+        <h2>Conversa entre as duas IAs</h2>
+        <button id="btn-export" class="btn btn-ghost btn-sm hidden" type="button">Baixar Relatório JSON</button>
+      </div>
+
+      <div id="error-banner" class="banner banner-error hidden"></div>
+      <div id="final-banner" class="banner hidden"></div>
+
+      <div id="chat-panel" class="card chat-panel hidden" aria-live="polite">
+        <div class="chat-panel-header">
+          <span id="chat-role-pill" class="pill">Sua vez</span>
+          <strong id="chat-title">Leve este pedido ao chat</strong>
+        </div>
+        <p id="chat-instructions" class="chat-instructions"></p>
+        <div class="chat-step">
+          <span class="chat-step-num">1</span>
+          <div class="chat-step-body">
+            <div class="chat-step-actions">
+              <button type="button" class="btn btn-primary btn-sm" id="chat-copy">Copiar pedido</button>
+              <a id="chat-open" class="btn btn-secondary btn-sm" href="#" target="_blank" rel="noopener noreferrer">Abrir chat</a>
+            </div>
+            <pre id="chat-prompt" class="code-box chat-prompt"></pre>
+          </div>
+        </div>
+        <div class="chat-step" id="chat-files-step">
+          <span class="chat-step-num">2</span>
+          <div class="chat-step-body">
+            <span>Baixe e anexe no chat:</span>
+            <div id="chat-files" class="chat-files"></div>
+          </div>
+        </div>
+        <div class="chat-step">
+          <span class="chat-step-num" id="chat-reply-num">3</span>
+          <div class="chat-step-body">
+            <label for="chat-reply">Cole aqui a resposta do chat</label>
+            <textarea id="chat-reply" rows="7" placeholder="Cole a resposta completa"></textarea>
+            <div id="chat-upload-wrap" class="chat-upload hidden">
+              <label for="chat-upload">…ou anexe o arquivo revisado que o chat devolveu</label>
+              <input id="chat-upload" type="file" multiple />
+            </div>
+            <div class="chat-step-actions">
+              <button type="button" class="btn btn-primary" id="chat-send">Enviar resposta e continuar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="timeline" class="timeline">
+        <div class="empty-timeline">
+          <p><strong>Pronto para começar.</strong></p>
+          <p>Clique em <em>Carregar Exemplo (Peixe)</em> e depois em <em>▶ Iniciar Conversa</em> para ver o criador e o verificador conversando em loop agora mesmo — ou escolha acima a sua assinatura (Claude, Gemini/Antigravity, ChatGPT), o Modo Chat ou uma chave de API para linkar suas próprias IAs.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

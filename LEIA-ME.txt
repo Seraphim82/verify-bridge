@@ -1,0 +1,43 @@
+VERIFY BRIDGE — COMO ABRIR (WINDOWS, LINUX E MAC)
+=================================================
+
+Requisito unico: Python 3.10 ou superior instalado (NAO precisa instalar
+nenhuma biblioteca nem rodar pip install).
+
+1) WINDOWS
+----------
+- Extraia o ZIP (se recebeu compactado).
+- De duplo clique em:  Abrir-Windows.bat
+- Ou no Prompt/PowerShell dentro desta pasta:
+    python -m verify_bridge ui
+
+2) LINUX
+--------
+- Extraia o ZIP e abra o terminal dentro desta pasta:
+    chmod +x Abrir-Linux.sh
+    ./Abrir-Linux.sh
+- Ou direto:
+    python3 -m verify_bridge ui
+
+3) MAC (macOS)
+--------------
+- De duplo clique em:  Abrir-Mac.command
+- Ou no Terminal dentro desta pasta:
+    python3 -m verify_bridge ui
+
+COMO TESTAR EM 10 SEGUNDOS (SEM CHAVE DE API)
+---------------------------------------------
+1. A tela vai abrir no navegador em http://127.0.0.1:8765
+2. Clique em "Carregar Exemplo (Peixe)"
+3. Clique em "Iniciar Conversa"
+
+USANDO SUAS IAs (SEM CHAVE DE API)
+----------------------------------
+Nos cards IA 1 (Criadora) e IA 2 (Verificadora), escolha:
+- "Claude Pro/Max", "Google Gemini (Antigravity)" ou "ChatGPT Plus/Pro":
+  usa a sua assinatura. Se pedir, clique em "Entrar" para fazer login.
+- "Modo Chat": a tela mostra o pedido pronto para colar no chat do
+  navegador e um campo para colar a resposta. Funciona com qualquer conta.
+Quem tiver chave de API tambem pode usar Anthropic / OpenAI / Gemini API.
+
+Manual completo: MANUAL-DE-UTILIZACAO.md

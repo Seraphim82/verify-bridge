@@ -1,0 +1,19 @@
+[project]
+name = "verify-bridge"
+version = "0.2.0"
+description = "Coletor e ponte de verificacao cega entre agente criador e agente verificador de IA"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+verify-bridge = "verify_bridge.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["verify_bridge", "verify_bridge.web"]
+
+[tool.setuptools.package-data]
+"verify_bridge.web" = ["static/*"]
