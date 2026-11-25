@@ -23,5 +23,5 @@ jobs:
         run: python -W error -m compileall -q verify_bridge tests
       - name: Rodar testes
         run: python -m unittest discover -s tests -t . -v
-      - name: Demonstracao offline
-        run: python -m verify_bridge demo
+      - name: Filtro cego no exemplo
+        run: python -m verify_bridge compile examples/pedido_exemplo.md --audit

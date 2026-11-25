@@ -310,12 +310,12 @@ class TestOrchestrator(unittest.TestCase):
         self.assertEqual(res_c.stop_reason, LoopStopReason.CREATOR_ERROR)
         self.assertIn("criador caiu", res_c.error or "")
 
-    def test_cli_demo_and_compile_commands(self) -> None:
-        self.assertEqual(cli_main(["demo"]), 0)
-        example_md = (
-            Path(__file__).resolve().parent.parent / "examples" / "creator_request_peixe.md"
-        )
+    def test_cli_compile_command_and_demo_removed(self) -> None:
+        example_md = Path(__file__).resolve().parent.parent / "examples" / "pedido_exemplo.md"
         self.assertEqual(cli_main(["compile", str(example_md), "--audit"]), 0)
+        # O comando "demo" (simulador do peixe) foi removido na 0.3.
+        with self.assertRaises(SystemExit):
+            cli_main(["demo"])
 
 
 if __name__ == "__main__":

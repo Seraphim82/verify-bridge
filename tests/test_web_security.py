@@ -16,10 +16,12 @@ from verify_bridge.sanitizer import SanitizerConfig, collect_and_sanitize
 from verify_bridge.web import server as server_mod
 from verify_bridge.web.server import create_server
 
+from tests._helpers import APPROVED, noop_creator_cmd, scripted_agents
+
 
 class TestWebSecurity(unittest.TestCase):
     def setUp(self) -> None:
-        self.server = create_server("127.0.0.1", 0, demo_delay=0.0)
+        self.server = create_server("127.0.0.1", 0)
         self.port = self.server.server_address[1]
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -52,7 +54,7 @@ class TestWebSecurity(unittest.TestCase):
         return {
             "markdown": "# Pedido Inicial\nGerar um resumo curto.",
             "verifier": {"provider": "cli", "cli_cmd": f"touch {self.marker}"},
-            "creator": {"provider": "demo"},
+            "creator": {"provider": "cli", "cli_cmd": noop_creator_cmd()},
             "max_iterations": 1,
         }
 
@@ -124,7 +126,10 @@ class TestWebSecurity(unittest.TestCase):
             status, started = self._request(
                 "POST",
                 "/api/runs",
-                {"markdown": "# Pedido Inicial\nGerar um resumo curto."},
+                {
+                    "markdown": "# Pedido Inicial\nGerar um resumo curto.",
+                    **scripted_agents(Path(self.tmp.name), [APPROVED]),
+                },
                 {"Content-Type": "application/json"},
             )
             self.assertEqual(status, 202)

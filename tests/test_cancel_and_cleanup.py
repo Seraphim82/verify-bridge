@@ -19,6 +19,8 @@ from verify_bridge.orchestrator import LoopConfig, run_verification_loop
 from verify_bridge.adapters import CallableCreator
 from verify_bridge.web.server import create_server
 
+from tests._helpers import APPROVED, noop_creator_cmd, scripted_agents
+
 PY = sys.executable
 SLEEP_30 = [PY, "-c", "import time; time.sleep(30)"]
 # Processo pai que abre um filho dormindo e grava o PID do filho.
@@ -114,8 +116,9 @@ class TestRunCancellable(unittest.TestCase):
 class TestWebStopAndCleanup(unittest.TestCase):
     def setUp(self) -> None:
         self.server = create_server(
-            "127.0.0.1", 0, demo_delay=0.0, session_retention_seconds=0.3
+            "127.0.0.1", 0, session_retention_seconds=0.3
         )
+        self.tmp = tempfile.TemporaryDirectory()
         self.port = self.server.server_address[1]
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -125,6 +128,7 @@ class TestWebStopAndCleanup(unittest.TestCase):
         self.server.cleanup()
         self.server.server_close()
         self.thread.join(timeout=3)
+        self.tmp.cleanup()
 
     def _post(self, path: str, body: dict | None = None) -> tuple[int, dict]:
         conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
@@ -146,7 +150,11 @@ class TestWebStopAndCleanup(unittest.TestCase):
 
     def test_run_workdir_is_deleted_after_retention(self) -> None:
         status, started = self._post(
-            "/api/runs", {"markdown": "# Pedido Inicial\nGerar um resumo curto."}
+            "/api/runs",
+            {
+                "markdown": "# Pedido Inicial\nGerar um resumo curto.",
+                **scripted_agents(Path(self.tmp.name), [APPROVED]),
+            },
         )
         self.assertEqual(status, 202)
         run_id = started["run_id"]
@@ -167,7 +175,7 @@ class TestWebStopAndCleanup(unittest.TestCase):
                 "markdown": "# Pedido Inicial\nGerar um resumo curto.",
                 # Comando digitado como na tela, com o caminho do Python entre aspas.
                 "verifier": {"provider": "cli", "cli_cmd": f'"{PY}" -c "import time; time.sleep(30)"'},
-                "creator": {"provider": "demo"},
+                "creator": {"provider": "cli", "cli_cmd": noop_creator_cmd()},
             },
         )
         self.assertEqual(status, 202)

@@ -25,11 +25,12 @@ nenhuma biblioteca nem rodar pip install).
 - Ou no Terminal dentro desta pasta:
     python3 -m verify_bridge ui
 
-COMO TESTAR EM 10 SEGUNDOS (SEM CHAVE DE API)
----------------------------------------------
+PRIMEIRO TESTE
+--------------
 1. A tela vai abrir no navegador em http://127.0.0.1:8765
-2. Clique em "Carregar Exemplo (Peixe)"
-3. Clique em "Iniciar Conversa"
+2. Escolha as duas IAs (veja abaixo) e escreva o pedido na caixa de texto.
+3. Clique em "Testar Filtro Cego" para ver o que a IA verificadora recebe.
+4. Clique em "Iniciar Conversa".
 
 USANDO SUAS IAs (SEM CHAVE DE API)
 ----------------------------------

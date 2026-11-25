@@ -22,7 +22,9 @@ from verify_bridge.models import AdapterError, CorrectionPrompt, CreatorSubmissi
 from verify_bridge.orchestrator import verify_once
 from verify_bridge.sanitizer import collect_and_sanitize
 from verify_bridge.subscriptions import SubscriptionCreator, SubscriptionVerifier
-from verify_bridge.web.server import _draw_fish_png, create_server
+from verify_bridge.web.server import create_server
+
+from tests._helpers import make_png, noop_creator_cmd
 
 POSIX = os.name != "nt"
 
@@ -96,11 +98,11 @@ class TestSubscriptionAdapters(unittest.TestCase):
         work = Path(self.tmp.name) / "entrada"
         work.mkdir()
         ref = work / "minha_referencia_secreta.png"
-        ref.write_bytes(_draw_fish_png(32, 32, gold=True, noisy=False, corner_marks=False))
+        ref.write_bytes(make_png(32, 32, (200, 160, 40)))
         out = work / "entrega_v1.png"
-        out.write_bytes(_draw_fish_png(32, 32, gold=False, noisy=False, corner_marks=False))
+        out.write_bytes(make_png(32, 32, (40, 90, 200)))
         sub = CreatorSubmission(
-            markdown_text="# Pedido Inicial\nPeixe dourado.",
+            markdown_text="# Pedido Inicial\nImagem dourada.",
             reference_files=(ref,),
             deliverable_files=(out,),
             base_dir=work,
@@ -177,7 +179,7 @@ class TestSubscriptionAdapters(unittest.TestCase):
 
 class TestChatMode(unittest.TestCase):
     def setUp(self) -> None:
-        self.server = create_server("127.0.0.1", 0, demo_delay=0.0)
+        self.server = create_server("127.0.0.1", 0)
         self.port = self.server.server_address[1]
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -207,9 +209,9 @@ class TestChatMode(unittest.TestCase):
         self.fail(f"evento {name} nao chegou")
 
     def _start(self, verifier: dict, creator: dict, extra: dict | None = None):
-        png = _draw_fish_png(32, 32, gold=True, noisy=False, corner_marks=False)
+        png = make_png(32, 32, (200, 160, 40))
         body = {
-            "markdown": "# Pedido Inicial\nPeixe dourado pequeno.",
+            "markdown": "# Pedido Inicial\nImagem dourada pequena.",
             "reference_files": [{"name": "ref_secreta.png", "data_b64": base64.b64encode(png).decode()}],
             "deliverable_files": [{"name": "entrega.png", "data_b64": base64.b64encode(png).decode()}],
             "verifier": verifier,
@@ -224,7 +226,7 @@ class TestChatMode(unittest.TestCase):
         return started["run_id"], session
 
     def test_chat_verifier_waits_for_pasted_reply_and_approves(self) -> None:
-        run_id, session = self._start({"provider": "chat", "chat": "chatgpt"}, {"provider": "demo"})
+        run_id, session = self._start({"provider": "chat", "chat": "chatgpt"}, {"provider": "cli", "cli_cmd": noop_creator_cmd()})
         req = self._wait_event(session, "awaiting_input")
         self.assertEqual(req["role"], "verifier")
         self.assertEqual(req["chat_url"], "https://chatgpt.com/")
@@ -269,11 +271,11 @@ class TestChatMode(unittest.TestCase):
         self.assertEqual(c1["role"], "creator")
         self.assertTrue(c1["expects_files"])
         self.assertIn("Pintar de dourado", c1["prompt"])
-        new_png = _draw_fish_png(40, 40, gold=True, noisy=False, corner_marks=False)
+        new_png = make_png(40, 40, (200, 160, 40))
         status, _ = self._req(
             "POST",
             f"/api/runs/{run_id}/reply",
-            {"request_id": c1["request_id"], "files": [{"name": "peixe_novo.png", "data_b64": base64.b64encode(new_png).decode()}]},
+            {"request_id": c1["request_id"], "files": [{"name": "imagem_revisada.png", "data_b64": base64.b64encode(new_png).decode()}]},
         )
         self.assertEqual(status, 200)
 
@@ -289,14 +291,14 @@ class TestChatMode(unittest.TestCase):
         self.assertTrue(self._wait_event(session, "done")["aprovado"])
 
     def test_stop_while_waiting_for_chat_reply_cancels(self) -> None:
-        run_id, session = self._start({"provider": "chat"}, {"provider": "demo"})
+        run_id, session = self._start({"provider": "chat"}, {"provider": "cli", "cli_cmd": noop_creator_cmd()})
         self._wait_event(session, "awaiting_input")
         status, _ = self._req("POST", f"/api/runs/{run_id}/stop")
         self.assertEqual(status, 200)
         self.assertEqual(self._wait_event(session, "done")["motivo_parada"], "cancelado")
 
     def test_empty_reply_is_rejected(self) -> None:
-        run_id, session = self._start({"provider": "chat"}, {"provider": "demo"})
+        run_id, session = self._start({"provider": "chat"}, {"provider": "cli", "cli_cmd": noop_creator_cmd()})
         req = self._wait_event(session, "awaiting_input")
         status, body = self._req("POST", f"/api/runs/{run_id}/reply", {"request_id": req["request_id"], "text": "  "})
         self.assertEqual(status, 400)

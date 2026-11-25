@@ -41,7 +41,6 @@
     outFilesInput: $("out-files-input"),
     refFilesList: $("ref-files-list"),
     outFilesList: $("out-files-list"),
-    btnExample: $("btn-example"),
     btnPreview: $("btn-preview"),
     btnStart: $("btn-start"),
     btnStop: $("btn-stop"),
@@ -114,8 +113,6 @@
 
     if (isApi && state.envKeys[provider]) {
       envHint.textContent = "✓ Chave detectada no ambiente";
-    } else if (provider === "demo") {
-      envHint.textContent = "Offline · sem chave";
     } else if (isSub) {
       envHint.textContent = "Sem chave de API";
     } else if (provider === "chat") {
@@ -373,7 +370,6 @@
   function setRunningUI(running) {
     els.btnStart.classList.toggle("hidden", running);
     els.btnStop.classList.toggle("hidden", !running);
-    els.btnExample.disabled = running;
     els.btnPreview.disabled = running;
   }
 
@@ -553,26 +549,6 @@
     }
   }
 
-  async function loadExample() {
-    hideBanners();
-    try {
-      const resp = await fetch("/api/example");
-      const data = await resp.json();
-      els.markdownInput.value = data.markdown || "";
-      state.referenceFiles = data.reference_files || [];
-      state.deliverableFiles = data.deliverable_files || [];
-      renderFileChips(els.refFilesList, state.referenceFiles, "ref");
-      renderFileChips(els.outFilesList, state.deliverableFiles, "out");
-      els.creatorProvider.value = "demo";
-      els.verifierProvider.value = "demo";
-      updateAgentFields("creator");
-      updateAgentFields("verifier");
-      setStatus("idle", "Exemplo carregado", "Clique em ▶ Iniciar Conversa para ver as 3 rodadas ao vivo.");
-    } catch (err) {
-      showError(`Erro ao carregar exemplo: ${err}`);
-    }
-  }
-
   async function previewFilter() {
     hideBanners();
     try {
@@ -721,7 +697,6 @@
       handleFileUpload(els.outFilesInput, state.deliverableFiles, els.outFilesList, "out")
     );
 
-    els.btnExample.addEventListener("click", loadExample);
     els.btnPreview.addEventListener("click", previewFilter);
     els.btnStart.addEventListener("click", startConversation);
     els.btnStop.addEventListener("click", stopConversation);

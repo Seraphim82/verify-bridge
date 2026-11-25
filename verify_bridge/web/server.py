@@ -8,14 +8,11 @@ import mimetypes
 import os
 import re
 import shutil
-import struct
 import tempfile
 import threading
-import time
 import urllib.parse
 import uuid
 import webbrowser
-import zlib
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -27,8 +24,6 @@ from ..adapters import (
     AnthropicVerifier,
     CLICreator,
     CLIVerifier,
-    CallableCreator,
-    CallableVerifier,
     GeminiCreator,
     GeminiVerifier,
     OpenAICompatibleCreator,
@@ -40,7 +35,6 @@ from ..models import (
     IterationRecord,
     LoopResult,
     VerificationPacket,
-    VerificationReport,
     VerifyBridgeError,
 )
 from ..manual import CHAT_URLS, ManualChannel, ManualCreator, ManualVerifier, parse_reply_payload
@@ -108,11 +102,9 @@ class VerifyBridgeServer(ThreadingHTTPServer):
         self,
         server_address: tuple[str, int],
         *,
-        demo_delay: float = 0.6,
         session_retention_seconds: float = SESSION_RETENTION_SECONDS,
     ) -> None:
         super().__init__(server_address, _RequestHandler)
-        self.demo_delay = demo_delay
         self.session_retention_seconds = session_retention_seconds
         self._sessions_lock = threading.Lock()
         self._sessions: dict[str, RunSession] = {}
@@ -241,10 +233,6 @@ class _RequestHandler(BaseHTTPRequestHandler):
                     },
                 }
             )
-            return
-
-        if path == "/api/example":
-            self._send_json(_build_golden_fish_example())
             return
 
         if path == "/api/subscriptions":
@@ -411,7 +399,6 @@ class _RequestHandler(BaseHTTPRequestHandler):
                 verifier_cfg=verifier_cfg,
                 workdir=workdir,
                 submission=submission,
-                demo_delay=self.server.demo_delay,
                 cancel_event=cancel_event,
                 channel=session.channel,
                 run_id=run_id,
@@ -661,23 +648,21 @@ def _build_agent_pair(
     verifier_cfg: dict[str, Any],
     workdir: Path,
     submission: CreatorSubmission,
-    demo_delay: float,
     cancel_event: threading.Event | None = None,
     channel: ManualChannel | None = None,
     run_id: str = "",
 ) -> tuple[VerifierAgent, CreatorAgent]:
-    c_prov = str(creator_cfg.get("provider") or "demo").lower()
-    v_prov = str(verifier_cfg.get("provider") or "demo").lower()
-
-    if c_prov == "demo" and v_prov == "demo":
-        return _make_demo_pair(workdir, submission, demo_delay)
+    if not str(verifier_cfg.get("provider") or "").strip():
+        raise VerifyBridgeError("Escolha a IA 2 (Verificadora).")
+    if not str(creator_cfg.get("provider") or "").strip():
+        raise VerifyBridgeError("Escolha a IA 1 (Criadora).")
 
     verifier = _make_special_agent("verifier", verifier_cfg, workdir, cancel_event, channel, run_id)
     if verifier is None:
-        verifier = _make_verifier_from_cfg(verifier_cfg, demo_delay, cancel_event)
+        verifier = _make_verifier_from_cfg(verifier_cfg, cancel_event)
     creator = _make_special_agent("creator", creator_cfg, workdir, cancel_event, channel, run_id)
     if creator is None:
-        creator = _make_creator_from_cfg(creator_cfg, workdir, submission, demo_delay, cancel_event)
+        creator = _make_creator_from_cfg(creator_cfg, workdir, submission, cancel_event)
     return verifier, creator  # type: ignore[return-value]
 
 
@@ -719,10 +704,9 @@ def _make_special_agent(
 
 def _make_verifier_from_cfg(
     cfg: dict[str, Any],
-    demo_delay: float,
     cancel_event: threading.Event | None = None,
 ) -> VerifierAgent:
-    prov = str(cfg.get("provider") or "demo").lower()
+    prov = str(cfg.get("provider") or "").lower()
     model = str(cfg.get("model") or "").strip()
     api_key = str(cfg.get("api_key") or "").strip() or None
     base_url = str(cfg.get("base_url") or "").strip()
@@ -750,9 +734,6 @@ def _make_verifier_from_cfg(
         if not cli_cmd:
             raise VerifyBridgeError("Informe o comando CLI do Agente Verificador.")
         return CLIVerifier(command=cli_cmd, cancel_event=cancel_event)
-    if prov == "demo":
-        v, _ = _make_demo_pair(Path.cwd(), CreatorSubmission(markdown_text="x"), demo_delay)
-        return v
     raise VerifyBridgeError(f"Provedor do verificador invalido: {prov}")
 
 
@@ -760,10 +741,9 @@ def _make_creator_from_cfg(
     cfg: dict[str, Any],
     workdir: Path,
     submission: CreatorSubmission,
-    demo_delay: float,
     cancel_event: threading.Event | None = None,
 ) -> CreatorAgent:
-    prov = str(cfg.get("provider") or "demo").lower()
+    prov = str(cfg.get("provider") or "").lower()
     model = str(cfg.get("model") or "").strip()
     api_key = str(cfg.get("api_key") or "").strip() or None
     base_url = str(cfg.get("base_url") or "").strip()
@@ -798,261 +778,18 @@ def _make_creator_from_cfg(
         if not cli_cmd:
             raise VerifyBridgeError("Informe o comando CLI do Agente Criador.")
         return CLICreator(command=cli_cmd, workdir=workdir, cancel_event=cancel_event)
-    if prov == "demo":
-        _, c = _make_demo_pair(workdir, submission, demo_delay)
-        return c
     raise VerifyBridgeError(f"Provedor do criador invalido: {prov}")
-
-
-def _make_demo_pair(
-    workdir: Path,
-    submission: CreatorSubmission,
-    demo_delay: float,
-) -> tuple[VerifierAgent, CreatorAgent]:
-    """Par simulado offline (cenario peixe dourado em 3 rodadas) para testar a tela ao vivo."""
-    responses = [
-        json.dumps(
-            {
-                "criterios": [
-                    {"id": "C1", "requisito": "Peixe dourado identico a REF-1", "peso": "essencial", "atendido": False},
-                    {"id": "C2", "requisito": "Imagem pequena (ate 256x256)", "peso": "importante", "atendido": False},
-                    {"id": "C3", "requisito": "Fundo limpo sem ruidos", "peso": "importante", "atendido": False},
-                ],
-                "falhas": [
-                    {
-                        "id": "F1",
-                        "criterio_id": "C1",
-                        "severidade": "critico",
-                        "observado": "Peixe azulado, cor divergente da referencia REF-1",
-                        "esperado": "Peixe dourado identico a REF-1",
-                        "acao": "Corrigir cor do peixe para dourado identico a REF-1",
-                        "evidencia": "OUT-1 vs REF-1",
-                    },
-                    {
-                        "id": "F2",
-                        "criterio_id": "C2",
-                        "severidade": "moderado",
-                        "observado": "Dimensoes acima do solicitado (320x320px)",
-                        "esperado": "Imagem pequena ate 256x256px",
-                        "acao": "Redimensionar entrega para 160x160px",
-                        "evidencia": "OUT-1",
-                    },
-                    {
-                        "id": "F3",
-                        "criterio_id": "C3",
-                        "severidade": "moderado",
-                        "observado": "Ruidos escuros espalhados no fundo",
-                        "esperado": "Fundo completamente limpo",
-                        "acao": "Remover manchas e ruidos do fundo",
-                        "evidencia": "OUT-1",
-                    },
-                ],
-            },
-            ensure_ascii=False,
-        ),
-        json.dumps(
-            {
-                "criterios": [
-                    {"id": "C1", "requisito": "Peixe dourado identico a REF-1", "peso": "essencial", "atendido": True},
-                    {"id": "C2", "requisito": "Imagem pequena (ate 256x256)", "peso": "importante", "atendido": True},
-                    {"id": "C3", "requisito": "Fundo limpo sem ruidos", "peso": "importante", "atendido": False},
-                ],
-                "falhas": [
-                    {
-                        "id": "F1",
-                        "criterio_id": "C3",
-                        "severidade": "moderado",
-                        "observado": "Borda cinza residual nos cantos do fundo",
-                        "esperado": "Fundo limpo sem marcas nos cantos",
-                        "acao": "Limpar residuos cinzas dos cantos preservando o peixe",
-                        "evidencia": "OUT-1",
-                    }
-                ],
-            },
-            ensure_ascii=False,
-        ),
-        json.dumps(
-            {
-                "criterios": [
-                    {"id": "C1", "requisito": "Peixe dourado identico a REF-1", "peso": "essencial", "atendido": True},
-                    {"id": "C2", "requisito": "Imagem pequena (ate 256x256)", "peso": "importante", "atendido": True},
-                    {"id": "C3", "requisito": "Fundo limpo sem ruidos", "peso": "importante", "atendido": True},
-                ],
-                "falhas": [
-                    {
-                        "id": "F1",
-                        "criterio_id": "C1",
-                        "severidade": "aceitavel",
-                        "observado": "Leve diferenca de 2% no brilho da nadadeira",
-                        "esperado": "Tom dourado fiel a REF-1",
-                        "acao": "Dentro da tolerancia; sem correcao obrigatoria",
-                        "evidencia": "OUT-1 vs REF-1",
-                    }
-                ],
-            },
-            ensure_ascii=False,
-        ),
-    ]
-    state = {"round": 0}
-
-    def demo_verifier(_packet: VerificationPacket, _sys: str, _repair: str | None) -> str:
-        if demo_delay > 0:
-            time.sleep(demo_delay)
-        idx = min(state["round"], len(responses) - 1)
-        state["round"] += 1
-        return responses[idx]
-
-    def demo_creator(
-        correction, prev: CreatorSubmission, _rep: VerificationReport
-    ) -> CreatorSubmission:
-        if demo_delay > 0:
-            time.sleep(demo_delay)
-        img_target = next(
-            (p for p in prev.deliverable_files if p.suffix.lower() == ".png"),
-            None,
-        )
-        if img_target is not None:
-            if correction.iteration == 1:
-                # Rodada 2: peixe dourado 160x160 mas ainda com cantos sujos
-                img_target.write_bytes(_draw_fish_png(160, 160, gold=True, noisy=False, corner_marks=True))
-            else:
-                # Rodada 3: peixe dourado 160x160 limpo e fiel
-                img_target.write_bytes(_draw_fish_png(160, 160, gold=True, noisy=False, corner_marks=False))
-        return prev
-
-    return CallableVerifier(demo_verifier), CallableCreator(demo_creator)
-
-
-def _draw_fish_png(
-    width: int,
-    height: int,
-    *,
-    gold: bool,
-    noisy: bool,
-    corner_marks: bool,
-) -> bytes:
-    """Desenha um peixe pixel-art valido em PNG puro (zero dependencias)."""
-    bg = (248, 250, 252)
-    body = (245, 178, 26) if gold else (56, 130, 232)
-    fin = (218, 132, 12) if gold else (34, 88, 185)
-    eye = (20, 24, 34)
-    rows: list[bytes] = []
-
-    cx = width * 0.54
-    cy = height * 0.50
-    rx = width * 0.28
-    ry = height * 0.19
-
-    for y in range(height):
-        row = bytearray([0])
-        for x in range(width):
-            r, g, b = bg
-
-            # Ruido espalhado (para simular entrega suja da rodada 1)
-            if noisy and ((x * 37 + y * 17) % 97 == 0):
-                r, g, b = (110, 118, 130)
-
-            # Marcas residuais nos cantos (para simular rodada 2)
-            if corner_marks and (
-                (x < width * 0.10 and y < height * 0.10)
-                or (x > width * 0.90 and y > height * 0.90)
-            ):
-                r, g, b = (170, 176, 186)
-
-            # Cauda triangular a esquerda
-            dx_tail = x - width * 0.18
-            dy_tail = abs(y - cy)
-            if 0 <= dx_tail <= width * 0.14 and dy_tail <= (width * 0.14 - dx_tail) * 1.15:
-                r, g, b = fin
-
-            # Nadadeira superior
-            if width * 0.44 <= x <= width * 0.60 and height * 0.24 <= y <= height * 0.34:
-                if (y - height * 0.24) >= abs(x - width * 0.52) * 0.6:
-                    r, g, b = fin
-
-            # Corpo oval do peixe
-            nx = (x - cx) / rx
-            ny = (y - cy) / ry
-            if nx * nx + ny * ny <= 1.0:
-                r, g, b = body
-
-            # Olho
-            ex = width * 0.68
-            ey = height * 0.46
-            er = max(2.0, width * 0.032)
-            if (x - ex) ** 2 + (y - ey) ** 2 <= er * er:
-                r, g, b = eye
-
-            row.extend((r, g, b))
-        rows.append(bytes(row))
-
-    def chunk(tag: bytes, payload: bytes) -> bytes:
-        crc = zlib.crc32(tag + payload) & 0xFFFFFFFF
-        return struct.pack(">I", len(payload)) + tag + payload + struct.pack(">I", crc)
-
-    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
-    return (
-        b"\x89PNG\r\n\x1a\n"
-        + chunk(b"IHDR", ihdr)
-        + chunk(b"IDAT", zlib.compress(b"".join(rows), level=6))
-        + chunk(b"IEND", b"")
-    )
-
-
-def _build_golden_fish_example() -> dict[str, Any]:
-    ref_png = _draw_fish_png(160, 160, gold=True, noisy=False, corner_marks=False)
-    out_png = _draw_fish_png(320, 320, gold=False, noisy=True, corner_marks=False)
-    py_blob = b"def gerar_peixe():\n    return render(cor='azul', tamanho=320)\n"
-
-    md = (
-        "# Pedido Inicial\n"
-        "Gerar uma imagem de um peixe dourado identico ao da imagem enviada pelo usuario, "
-        "pequena (ate 256x256), limpa e com maior qualidade.\n\n"
-        "## Criterios de Aceite\n"
-        "- Mesma cor dourada e formato da referencia\n"
-        "- Resolucao pequena (ate 256x256)\n"
-        "- Fundo completamente limpo, sem ruidos\n\n"
-        "## Justificativa do Agente Criador\n"
-        "Eu optei por deixar o peixe azul em 320x320 porque achei mais moderno.\n"
-        "```python\n"
-        "render(color='blue', size=(320, 320))\n"
-        "```\n"
-    )
-    return {
-        "markdown": md,
-        "reference_files": [
-            {
-                "name": "peixe_usuario_referencia.png",
-                "mime": "image/png",
-                "data_b64": base64.b64encode(ref_png).decode("ascii"),
-            }
-        ],
-        "deliverable_files": [
-            {
-                "name": "entrega_inicial_v1.png",
-                "mime": "image/png",
-                "data_b64": base64.b64encode(out_png).decode("ascii"),
-            },
-            {
-                "name": "script_gerador.py",
-                "mime": "text/x-python",
-                "data_b64": base64.b64encode(py_blob).decode("ascii"),
-            },
-        ],
-    }
 
 
 def create_server(
     host: str = "127.0.0.1",
     port: int = 8765,
     *,
-    demo_delay: float = 0.6,
     session_retention_seconds: float = SESSION_RETENTION_SECONDS,
 ) -> VerifyBridgeServer:
     """Cria instancia do servidor local sem iniciar o loop de bloqueio."""
     return VerifyBridgeServer(
         (host, port),
-        demo_delay=demo_delay,
         session_retention_seconds=session_retention_seconds,
     )
 

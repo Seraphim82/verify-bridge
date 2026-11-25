@@ -46,18 +46,18 @@ Se ainda não tiver Python no Windows, baixe em https://www.python.org/downloads
 
 ---
 
-## 3. Primeiro teste rápido (sem chave de API)
+## 3. Primeiro teste rápido
 
 Assim que a tela abrir no navegador:
 
-1. Clique no botão **"Carregar Exemplo (Peixe)"** no canto superior direito.
-   - Ele carrega um pedido de imagem de peixe dourado, um `.md` cheio de justificativas e código (para você ver o filtro limpando tudo), a imagem de referência (`REF-1`), uma entrega inicial errada (`OUT-1`) e um arquivo `script_gerador.py` (que será bloqueado).
-2. *(Opcional)* Clique em **"Testar Filtro Cego"** para ver exatamente o que atravessa a ponte e o que é descartado antes de gastar qualquer token.
-3. Clique em **"▶ Iniciar Conversa"**.
-4. Acompanhe as **3 rodadas ao vivo**:
-   - **Rodada 1:** erros `CRÍTICO` + `MODERADO` → gera prompt direto → Criador corrige.
-   - **Rodada 2:** resta 1 erro `MODERADO` → Criador corrige.
-   - **Rodada 3:** apenas 1 detalhe `ACEITÁVEL` → **APROVADO** e o loop para sozinho.
+1. Escolha as duas IAs (seção 4). O mais simples é a sua assinatura, ou o **Modo Chat**, que funciona com qualquer conta.
+2. Cole na caixa de texto o conteúdo de `examples/pedido_exemplo.md` e, em **Entregas do Criador**, adicione `examples/slogan.txt` e `examples/gerador.py`.
+3. Clique em **"Testar Filtro Cego"**: a seção de justificativa, o bloco de código e o arquivo `gerador.py` devem aparecer como removidos/bloqueados — é exatamente isso que a IA Verificadora deixa de ver.
+4. Clique em **"▶ Iniciar Conversa"** e acompanhe as rodadas ao vivo:
+   - cada rodada mostra as falhas `CRÍTICO` / `MODERADO` / `ACEITÁVEL` e o pedido de correção enviado à Criadora;
+   - o ciclo para sozinho quando não restam falhas críticas nem moderadas (**APROVADO**).
+
+> Em teste real com a assinatura Claude Pro nos dois papéis, este exemplo foi aprovado na 3ª rodada com o slogan "Trigo Bom: pão fresco, feito à mão."
 
 ---
 
@@ -106,7 +106,6 @@ Quem tiver chave de API pode usá-la normalmente:
 
 | Provedor | O que preencher | Observações |
 |---|---|---|
-| **Simulador Offline (Demo)** | Nada | Ideal para testar a tela sem gastar tokens. |
 | **Google Gemini API** | Modelo (ex.: `gemini-2.5-flash`) + API Key | Suporta comparação visual de imagens e PDFs. Detecta `GEMINI_API_KEY` do ambiente. |
 | **OpenAI / Ollama / OpenRouter** | Modelo (ex.: `gpt-4o-mini`) + Base URL + API Key | Para **Ollama local**, use Base URL `http://localhost:11434/v1/chat/completions` e deixe a API Key em branco. Detecta `OPENAI_API_KEY`. |
 | **Anthropic (Claude API)** | Modelo (ex.: `claude-sonnet-5-5`) + API Key | Suporta imagens e PDFs. Detecta `ANTHROPIC_API_KEY`. |
@@ -131,19 +130,19 @@ Você pode colar o texto direto na caixa ou clicar em **"Importar .md"**:
 
 ```markdown
 # Pedido Inicial
-Gerar uma imagem de um peixe dourado idêntico ao da imagem de referência,
-pequena (até 256x256), limpa e com maior qualidade.
+Gerar um logotipo igual ao da imagem de referência, em fundo branco,
+pequeno (até 256x256) e com boa nitidez.
 
 ## Critérios de Aceite
-- Mesma cor dourada e silhueta da referência
-- Fundo limpo sem ruídos
+- Mesmas cores e formato da referência
+- Fundo branco, sem ruídos
 - Resolução até 256x256
 ```
 
 Mesmo que o agente criador envie um `.md` bagunçado com seções como `## Justificativa`, `## O que eu fiz`, `## Implementação`, comentários HTML ou blocos de código (` ```python ... ``` `), o **Filtro Cego** remove tudo automaticamente antes de mandar para a IA Verificadora.
 
 ### Referências vs. Entregas
-- **Referências do Usuário (`REF-*`):** arquivos enviados originalmente pelo usuário (ex.: foto original do peixe, layout de referência, texto-base).
+- **Referências do Usuário (`REF-*`):** arquivos enviados originalmente pelo usuário (ex.: foto ou logotipo original, layout de referência, texto-base).
 - **Entregas do Criador (`OUT-*`):** arquivos produzidos pela IA Criadora que precisam ser verificados.
 
 ### Arquivos aceitos e arquivos bloqueados
@@ -184,11 +183,8 @@ Se preferir automatizar sem abrir o navegador:
 # Abrir tela web em outra porta
 python3 -m verify_bridge ui --port 9000
 
-# Rodar demonstração offline no terminal
-python3 -m verify_bridge demo
-
 # Apenas testar o filtro cego e ver a auditoria
-python3 -m verify_bridge compile examples/creator_request_peixe.md --audit
+python3 -m verify_bridge compile examples/pedido_exemplo.md --audit
 
 # Fazer 1 rodada de verificação com Gemini
 GEMINI_API_KEY="sua-chave" python3 -m verify_bridge verify pedido.md \

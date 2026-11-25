@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import tempfile
 import threading
@@ -24,6 +25,8 @@ from verify_bridge.models import (
 )
 from verify_bridge.orchestrator import LoopConfig, run_verification_loop
 from verify_bridge.web.server import create_server
+
+from tests._helpers import APPROVED, make_png, scripted_agents, verdict
 
 
 class TestHttpCreatorsAndCancel(unittest.TestCase):
@@ -69,7 +72,8 @@ class TestHttpCreatorsAndCancel(unittest.TestCase):
 
 class TestWebUIAPI(unittest.TestCase):
     def setUp(self) -> None:
-        self.server = create_server("127.0.0.1", 0, demo_delay=0.0)
+        self.server = create_server("127.0.0.1", 0)
+        self.tmp = tempfile.TemporaryDirectory()
         self.port = self.server.server_address[1]
         self.base = f"http://127.0.0.1:{self.port}"
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -80,6 +84,7 @@ class TestWebUIAPI(unittest.TestCase):
         self.server.cleanup()
         self.server.server_close()
         self.thread.join(timeout=3)
+        self.tmp.cleanup()
 
     def _get(self, path: str) -> tuple[int, bytes, str]:
         with urllib.request.urlopen(f"{self.base}{path}", timeout=5) as resp:
@@ -95,7 +100,7 @@ class TestWebUIAPI(unittest.TestCase):
         with urllib.request.urlopen(req, timeout=5) as resp:
             return resp.status, json.loads(resp.read().decode("utf-8"))
 
-    def test_serves_html_static_env_and_example(self) -> None:
+    def test_serves_html_static_env_and_no_example_route(self) -> None:
         status, body, ctype = self._get("/")
         self.assertEqual(status, 200)
         self.assertIn("text/html", ctype)
@@ -113,16 +118,26 @@ class TestWebUIAPI(unittest.TestCase):
         for v in env["env_keys"].values():
             self.assertIsInstance(v, bool)
 
-        status, ex_body, _ = self._get("/api/example")
-        self.assertEqual(status, 200)
-        ex = json.loads(ex_body.decode("utf-8"))
-        self.assertIn("Pedido Inicial", ex["markdown"])
-        self.assertEqual(len(ex["reference_files"]), 1)
-        self.assertEqual(len(ex["deliverable_files"]), 2)
+        # O exemplo do peixe foi removido na 0.3.
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            self._get("/api/example")
+        self.assertEqual(ctx.exception.code, 404)
+        self.assertNotIn(b"btn-example", body)
 
-    def test_preview_and_full_demo_run_sse_stream_and_image_snapshots(self) -> None:
-        _, ex_body, _ = self._get("/api/example")
-        ex = json.loads(ex_body.decode("utf-8"))
+    def test_preview_and_full_run_sse_stream_and_image_snapshots(self) -> None:
+        b64 = lambda data: base64.b64encode(data).decode("ascii")  # noqa: E731
+        ex = {
+            "markdown": (
+                "# Pedido Inicial\nImagem dourada pequena e limpa.\n\n"
+                "## Justificativa do Agente Criador\nEu optei por azul.\n"
+                "```python\nrender(cor='azul')\n```\n"
+            ),
+            "reference_files": [{"name": "referencia.png", "data_b64": b64(make_png(64, 64))}],
+            "deliverable_files": [
+                {"name": "entrega.png", "data_b64": b64(make_png(96, 96, (40, 90, 200)))},
+                {"name": "script_gerador.py", "data_b64": b64(b"print('x')\n")},
+            ],
+        }
 
         # 1. Preview do filtro cego
         status, prev = self._post_json("/api/preview", ex)
@@ -130,11 +145,13 @@ class TestWebUIAPI(unittest.TestCase):
         self.assertNotIn("Justificativa", prev["raw_packet_text"])
         self.assertEqual(len(prev["sanitization"]["rejected_files"]), 1)
 
-        # 2. Inicia conversa Demo <-> Demo
+        # 2. Inicia conversa com IAs falsas: critico -> moderado -> aprovado
         run_payload = {
             **ex,
-            "creator": {"provider": "demo"},
-            "verifier": {"provider": "demo"},
+            **scripted_agents(
+                Path(self.tmp.name),
+                [verdict("critico", "moderado"), verdict("moderado"), verdict("aceitavel")],
+            ),
             "max_iterations": 5,
             "stagnation_limit": 2,
         }
@@ -169,6 +186,18 @@ class TestWebUIAPI(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(ctype, "image/png")
         self.assertTrue(png_bytes.startswith(b"\x89PNG\r\n\x1a\n"))
+
+    def test_run_without_chosen_agents_asks_to_choose(self) -> None:
+        req = urllib.request.Request(
+            f"{self.base}/api/runs",
+            data=json.dumps({"markdown": "# Pedido Inicial\nResumo curto."}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(req, timeout=5)
+        self.assertEqual(ctx.exception.code, 400)
+        self.assertIn("Escolha a IA", json.loads(ctx.exception.read())["error"])
 
     def test_invalid_empty_markdown_returns_400(self) -> None:
         req = urllib.request.Request(

@@ -22,7 +22,7 @@ Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Ag
 | `verify_bridge/subscriptions.py` | Conectores por **assinatura sem API**: Claude Code, Antigravity e Codex (status, login, verificador cego e criador). |
 | `verify_bridge/manual.py` | **Modo Chat** assistido: a tela entrega o pedido pronto e recebe a resposta colada do chat. |
 | `verify_bridge/orchestrator.py` | Motor do loop (`verify_once`, `run_verification_loop`) com retry de JSON, protecao contra estagnacao e limite de rodadas. |
-| `verify_bridge/cli.py` | CLI (`compile`, `verify`, `loop`, `demo`). |
+| `verify_bridge/cli.py` | CLI (`ui`, `compile`, `verify`, `loop`). |
 
 ## Como a severidade e decidida
 
@@ -43,18 +43,18 @@ Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Ag
 cd ~/Desktop/meu-projeto/verify-bridge
 python3 -m verify_bridge ui
 ```
-Abre automaticamente em `http://127.0.0.1:8765`, onde voce linka a **IA 1 (Criadora)** e a **IA 2 (Verificadora)** (Gemini, OpenAI/Ollama, Claude, CLI local ou Simulador Offline), envia o `.md` + arquivos e acompanha as rodadas ao vivo.
+Abre automaticamente em `http://127.0.0.1:8765`, onde voce linka a **IA 1 (Criadora)** e a **IA 2 (Verificadora)** (assinatura Claude/Google/ChatGPT sem chave de API, Modo Chat, APIs Gemini/OpenAI/Ollama/Claude ou CLI local), envia o `.md` + arquivos e acompanha as rodadas ao vivo.
 
 ### Via Terminal (CLI)
 
 ```bash
 cd verify-bridge
 
-# 1. Demonstracao offline completa (cenario do peixe dourado em 3 rodadas)
-python3 -m verify_bridge demo
+# 1. Abrir a tela visual
+python3 -m verify_bridge ui
 
 # 2. Inspecionar apenas o pacote cru gerado (com auditoria local do que foi removido)
-python3 -m verify_bridge compile examples/creator_request_peixe.md --audit
+python3 -m verify_bridge compile examples/pedido_exemplo.md --audit
 
 # 3. Rodar uma verificacao cega com Gemini, OpenAI, Anthropic ou CLI local
 GEMINI_API_KEY=... python3 -m verify_bridge verify pedido.md --ref ref.png --out out.png --provider gemini

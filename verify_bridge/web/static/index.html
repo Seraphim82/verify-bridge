@@ -16,7 +16,6 @@
       </div>
     </div>
     <div class="topbar-actions">
-      <button id="btn-example" class="btn btn-ghost" type="button">Carregar Exemplo (Peixe)</button>
       <button id="btn-preview" class="btn btn-secondary" type="button">Testar Filtro Cego</button>
       <button id="btn-start" class="btn btn-primary" type="button">▶ Iniciar Conversa</button>
       <button id="btn-stop" class="btn btn-danger hidden" type="button">■ Parar</button>
@@ -36,7 +35,7 @@
           <label for="creator-provider">Provedor</label>
           <select id="creator-provider">
             <optgroup label="Assinatura (sem chave de API)">
-              <option value="sub_claude">Claude Pro/Max · Claude Code</option>
+              <option value="sub_claude" selected>Claude Pro/Max · Claude Code</option>
               <option value="sub_antigravity">Google Gemini · Antigravity</option>
               <option value="sub_codex">ChatGPT Plus/Pro · Codex</option>
             </optgroup>
@@ -49,7 +48,6 @@
               <option value="gemini">Google Gemini API</option>
             </optgroup>
             <optgroup label="Outros">
-              <option value="demo" selected>Simulador Offline (Demo Peixe)</option>
               <option value="cli">Agente CLI personalizado</option>
             </optgroup>
           </select>
@@ -135,7 +133,7 @@
           <label for="verifier-provider">Provedor</label>
           <select id="verifier-provider">
             <optgroup label="Assinatura (sem chave de API)">
-              <option value="sub_claude">Claude Pro/Max · Claude Code</option>
+              <option value="sub_claude" selected>Claude Pro/Max · Claude Code</option>
               <option value="sub_antigravity">Google Gemini · Antigravity</option>
               <option value="sub_codex">ChatGPT Plus/Pro · Codex</option>
             </optgroup>
@@ -148,7 +146,6 @@
               <option value="gemini">Google Gemini API</option>
             </optgroup>
             <optgroup label="Outros">
-              <option value="demo" selected>Simulador Offline (Demo Peixe)</option>
               <option value="cli">Agente CLI personalizado</option>
             </optgroup>
           </select>
@@ -306,7 +303,7 @@
       <div id="timeline" class="timeline">
         <div class="empty-timeline">
           <p><strong>Pronto para começar.</strong></p>
-          <p>Clique em <em>Carregar Exemplo (Peixe)</em> e depois em <em>▶ Iniciar Conversa</em> para ver o criador e o verificador conversando em loop agora mesmo — ou escolha acima a sua assinatura (Claude, Gemini/Antigravity, ChatGPT), o Modo Chat ou uma chave de API para linkar suas próprias IAs.</p>
+          <p>Escolha acima as duas IAs (sua assinatura Claude, Gemini/Antigravity ou ChatGPT, o Modo Chat ou uma chave de API), escreva o pedido, anexe os arquivos e clique em <em>▶ Iniciar Conversa</em>. Use <em>Testar Filtro Cego</em> para ver antes o que a IA verificadora vai receber.</p>
         </div>
       </div>
     </section>
