@@ -1,6 +1,6 @@
 [project]
 name = "verify-bridge"
-version = "0.3.0"
+version = "0.3.1"
 description = "Coletor e ponte de verificacao cega entre agente criador e agente verificador de IA"
 requires-python = ">=3.10"
 dependencies = []

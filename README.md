@@ -2,7 +2,7 @@
 
 [![Testes](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml/badge.svg)](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml)
 
-**Baixar:** veja a [ultima Release](https://github.com/Seraphim82/verify-bridge/releases/latest) (`.zip` pronto para macOS, Windows e Linux + PDF de apresentacao).
+**Baixar:** veja a [ultima Release](https://github.com/Seraphim82/verify-bridge/releases/latest) : um `.zip` para cada sistema (`verify-bridge-windows-…`, `verify-bridge-mac-…`, `verify-bridge-linux-…`) + PDF de apresentacao. O codigo dentro dos tres e o mesmo; muda so o atalho de abrir e o LEIA-ME. Para gerar os pacotes: `python3 scripts/empacotar.py` (saem em `dist/`).
 
 Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Agente Verificador** de IA, com loop automatico de correcoes.
 
@@ -41,7 +41,7 @@ Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Ag
 
 ### Abrir a tela visual (conectar as duas IAs no navegador)
 
-- **No Finder (Mac):** de duplo clique em `Abrir Verify Bridge.command` dentro da pasta `verify-bridge/`.
+- **No Finder (Mac):** de duplo clique em `Abrir-Mac.command` dentro da pasta `verify-bridge/`.
 - **Ou no Terminal:**
 ```bash
 cd ~/Desktop/meu-projeto/verify-bridge

@@ -1,6 +1,9 @@
 VERIFY BRIDGE — COMO ABRIR (WINDOWS, LINUX E MAC)
 =================================================
 
+Para enviar a alguem, use o pacote do sistema da pessoa (Release no GitHub
+ou "python3 scripts/empacotar.py"): cada um ja vem com o LEIA-ME certo.
+
 Requisito unico: Python 3.10 ou superior instalado (NAO precisa instalar
 nenhuma biblioteca nem rodar pip install).
 

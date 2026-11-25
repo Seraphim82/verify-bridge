@@ -1,0 +1,36 @@
+VERIFY BRIDGE — WINDOWS
+=======================
+
+Requisito unico: Python 3.10 ou superior (NAO precisa de pip install).
+Se nao tiver: https://www.python.org/downloads/  -> na instalacao marque
+"Add Python to PATH".
+
+COMO ABRIR
+----------
+1. Clique com o botao direito no .zip -> "Extrair tudo..."
+   (nao rode de dentro do .zip sem extrair).
+2. Entre na pasta "verify-bridge" e de duplo clique em:  Abrir-Windows.bat
+3. Se o Windows mostrar "O Windows protegeu o computador", clique em
+   "Mais informacoes" -> "Executar assim mesmo".
+4. O navegador abre em http://127.0.0.1:8765
+   Deixe a janela preta aberta enquanto usa. Para encerrar, feche-a.
+
+Alternativa no Prompt/PowerShell dentro da pasta:
+    py -3 -m verify_bridge ui
+
+USANDO SUAS IAs (SEM CHAVE DE API)
+----------------------------------
+Nos cards IA 1 (Criadora) e IA 2 (Verificadora), escolha:
+- "Claude Pro/Max", "Google Gemini (Antigravity)" ou "ChatGPT Plus/Pro":
+  usa a sua assinatura. Se pedir, clique em "Entrar" para fazer login.
+- "Modo Chat": a tela mostra o pedido pronto para colar no chat do
+  navegador e um campo para colar a resposta. Funciona com qualquer conta.
+Quem tiver chave de API tambem pode usar Anthropic / OpenAI / Gemini API.
+
+CONFERIR SE ESTA TUDO CERTO (opcional)
+--------------------------------------
+No Prompt dentro da pasta:
+    py -3 -m unittest discover -s tests -t .
+Deve terminar com "OK".
+
+Manual completo: MANUAL-DE-UTILIZACAO.md

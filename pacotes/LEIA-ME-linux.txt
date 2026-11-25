@@ -1,0 +1,35 @@
+VERIFY BRIDGE — LINUX
+=====================
+
+Requisito unico: Python 3.10 ou superior (NAO precisa de pip install).
+Confira:  python3 --version
+Se nao tiver: sudo apt install python3   (ou o gerenciador da sua distro)
+
+COMO ABRIR
+----------
+1. Extraia o .zip e abra o terminal dentro da pasta "verify-bridge".
+2. Rode:
+       ./Abrir-Linux.sh
+   Se aparecer "Permissao negada", rode antes:  chmod +x Abrir-Linux.sh
+3. O navegador abre em http://127.0.0.1:8765
+   Deixe o terminal aberto enquanto usa. Para encerrar: Ctrl + C.
+
+Alternativa direta:
+    python3 -m verify_bridge ui
+
+USANDO SUAS IAs (SEM CHAVE DE API)
+----------------------------------
+Nos cards IA 1 (Criadora) e IA 2 (Verificadora), escolha:
+- "Claude Pro/Max", "Google Gemini (Antigravity)" ou "ChatGPT Plus/Pro":
+  usa a sua assinatura. Se pedir, clique em "Entrar" para fazer login.
+- "Modo Chat": a tela mostra o pedido pronto para colar no chat do
+  navegador e um campo para colar a resposta. Funciona com qualquer conta.
+Quem tiver chave de API tambem pode usar Anthropic / OpenAI / Gemini API.
+
+CONFERIR SE ESTA TUDO CERTO (opcional)
+--------------------------------------
+No terminal dentro da pasta:
+    python3 -m unittest discover -s tests -t .
+Deve terminar com "OK".
+
+Manual completo: MANUAL-DE-UTILIZACAO.md

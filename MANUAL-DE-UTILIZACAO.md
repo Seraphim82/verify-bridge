@@ -22,6 +22,8 @@ Se ainda não tiver Python no Windows, baixe em https://www.python.org/downloads
 
 ## 2. Como abrir o programa
 
+Baixe o pacote do seu sistema: `verify-bridge-windows-….zip`, `verify-bridge-mac-….zip` ou `verify-bridge-linux-….zip`. O programa é o mesmo nos três; cada pacote traz só o atalho e o `LEIA-ME.txt` do seu sistema.
+
 ### Windows
 1. Extraia o arquivo `.zip` em uma pasta (não execute de dentro do ZIP sem extrair).
 2. Dê duplo clique em **`Abrir-Windows.bat`**.

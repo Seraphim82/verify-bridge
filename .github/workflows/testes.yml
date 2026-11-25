@@ -25,3 +25,5 @@ jobs:
         run: python -m unittest discover -s tests -t . -v
       - name: Filtro cego no exemplo
         run: python -m verify_bridge compile examples/pedido_exemplo.md --audit
+      - name: Pacote deste sistema (extraido e testado)
+        run: python scripts/empacotar.py --testar ${{ runner.os == 'Windows' && 'windows' || runner.os == 'macOS' && 'mac' || 'linux' }}
