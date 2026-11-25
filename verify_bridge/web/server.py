@@ -118,6 +118,16 @@ class VerifyBridgeServer(ThreadingHTTPServer):
         self._sessions: dict[str, RunSession] = {}
         self._expiry_timers: dict[str, threading.Timer] = {}
 
+    def handle_error(self, request: Any, client_address: Any) -> None:
+        # O navegador fechar a conexao (aba fechada, recarregar) e normal:
+        # nao poluir o terminal do usuario com traceback por isso.
+        import sys
+
+        exc = sys.exc_info()[1]
+        if isinstance(exc, (ConnectionResetError, BrokenPipeError, ConnectionAbortedError)):
+            return
+        super().handle_error(request, client_address)
+
     def register_session(self, session: RunSession) -> None:
         with self._sessions_lock:
             self._sessions[session.run_id] = session

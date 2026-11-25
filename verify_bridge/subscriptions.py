@@ -192,7 +192,14 @@ class _StatusCache:
 _CACHE = _StatusCache()
 
 
+def _resolve(argv: list[str]) -> list[str]:
+    """Caminho completo do programa. Necessario no Windows, onde `claude`/`codex`
+    costumam ser `claude.cmd`/`codex.cmd` e o sistema nao os acha so pelo nome."""
+    return [shutil.which(argv[0]) or argv[0], *argv[1:]]
+
+
 def _quick(argv: list[str], env: dict[str, str], timeout: float = 20.0) -> subprocess.CompletedProcess[str] | None:
+    argv = _resolve(argv)
     try:
         return subprocess.run(
             argv,
@@ -304,7 +311,7 @@ def start_login(tool_id: str) -> dict:
     log_path = Path(tempfile.gettempdir()) / f"verify-bridge-login-{tool.id}.log"
     log = log_path.open("w", encoding="utf-8")
     subprocess.Popen(  # noqa: S603
-        argv,
+        _resolve(argv),
         stdin=subprocess.DEVNULL,
         stdout=log,
         stderr=subprocess.STDOUT,
@@ -414,7 +421,7 @@ def _run_tool(
     cancel_event: threading.Event | None,
     role: str,
 ) -> subprocess.CompletedProcess[str]:
-    argv = [shutil.which(argv[0]) or argv[0], *argv[1:]]
+    argv = _resolve(argv)
     try:
         proc = _run_cancellable(
             argv,
