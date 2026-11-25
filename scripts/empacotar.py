@@ -3,7 +3,7 @@
 O programa dentro dos tres pacotes e identico; muda apenas o atalho de abrir
 e o LEIA-ME. Uso:
 
-    python scripts/empacotar.py                 # gera dist/verify-bridge-<so>-v<versao>.zip
+    python scripts/empacotar.py                 # gera dist/verify-bridge-<so>.zip
     python scripts/empacotar.py --testar windows  # gera e roda os testes dentro do pacote extraido
 """
 
@@ -69,7 +69,7 @@ def _gravar(zf: zipfile.ZipFile, nome: str, dados: bytes, executavel: bool = Fal
 def montar(sistema: str, destino: Path) -> Path:
     cfg = SISTEMAS[sistema]
     destino.mkdir(parents=True, exist_ok=True)
-    saida = destino / f"verify-bridge-{sistema}-v{versao()}.zip"
+    saida = destino / f"verify-bridge-{sistema}.zip"
     with zipfile.ZipFile(saida, "w") as zf:
         for caminho in _arquivos_comuns():
             _gravar(zf, caminho.relative_to(RAIZ).as_posix(), caminho.read_bytes())

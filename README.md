@@ -2,7 +2,22 @@
 
 [![Testes](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml/badge.svg)](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml)
 
-**Baixar:** veja a [ultima Release](https://github.com/Seraphim82/verify-bridge/releases/latest) : um `.zip` para cada sistema (`verify-bridge-windows-…`, `verify-bridge-mac-…`, `verify-bridge-linux-…`) + PDF de apresentacao. O codigo dentro dos tres e o mesmo; muda so o atalho de abrir e o LEIA-ME. Para gerar os pacotes: `python3 scripts/empacotar.py` (saem em `dist/`).
+## ⬇️ Baixar (versao mais recente)
+
+| Sistema | Download | Como abrir |
+|---|---|---|
+| **Windows** | [verify-bridge-windows.zip](https://github.com/Seraphim82/verify-bridge/releases/latest/download/verify-bridge-windows.zip) | Extrair e dar dois cliques em `Abrir-Windows.bat` |
+| **Mac** | [verify-bridge-mac.zip](https://github.com/Seraphim82/verify-bridge/releases/latest/download/verify-bridge-mac.zip) | Extrair e dar dois cliques em `Abrir-Mac.command` |
+| **Linux** | [verify-bridge-linux.zip](https://github.com/Seraphim82/verify-bridge/releases/latest/download/verify-bridge-linux.zip) | Extrair e rodar `./Abrir-Linux.sh` |
+| **Apresentacao (PDF)** | [Verify-Bridge-Apresentacao.pdf](https://github.com/Seraphim82/verify-bridge/releases/latest/download/Verify-Bridge-Apresentacao.pdf) | Explica tudo, com comparacao entre versoes |
+
+Requisito: Python 3.10+. O programa dentro dos tres pacotes e o mesmo; muda so o atalho e o LEIA-ME.
+
+**Versoes anteriores (tags):** [todas as Releases](https://github.com/Seraphim82/verify-bridge/releases) · [todas as tags](https://github.com/Seraphim82/verify-bridge/tags) — `v0.3.1` (atual, um pacote por sistema), `v0.3.0`, `v0.2.0` (ultima com o exemplo do peixe).
+
+Para gerar os pacotes localmente: `python3 scripts/empacotar.py` (saem em `dist/`).
+
+---
 
 Coletor e conector de **verificacao cega** entre um **Agente Criador** e um **Agente Verificador** de IA, com loop automatico de correcoes.
 
