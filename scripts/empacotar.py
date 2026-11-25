@@ -23,7 +23,7 @@ PASTA_NO_ZIP = "verify-bridge"
 
 # Arquivos comuns aos tres pacotes.
 COMUNS_PASTAS = ("verify_bridge", "tests", "examples")
-COMUNS_ARQUIVOS = ("pyproject.toml", "README.md", "MANUAL-DE-UTILIZACAO.md")
+COMUNS_ARQUIVOS = ("pyproject.toml", "README.md", "MANUAL-DE-UTILIZACAO.md", "LICENSE")
 IGNORAR = {"__pycache__", ".DS_Store"}
 
 SISTEMAS = {

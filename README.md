@@ -115,3 +115,7 @@ result = run_verification_loop(
 )
 print(result.approved, result.stop_reason)
 ```
+
+## Licenca
+
+[MIT](LICENSE): pode usar, modificar e redistribuir, mantendo o aviso de copyright.
