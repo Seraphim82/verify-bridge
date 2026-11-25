@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Verify Bridge">
+  <defs>
+    <!-- Inox: metal escovado com reflexos -->
+    <linearGradient id="inox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f6f8"/>
+      <stop offset="0.28" stop-color="#b9c0c7"/>
+      <stop offset="0.5" stop-color="#eef1f3"/>
+      <stop offset="0.72" stop-color="#9aa3ac"/>
+      <stop offset="1" stop-color="#d9dee2"/>
+    </linearGradient>
+    <linearGradient id="inoxVert" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef1f3"/>
+      <stop offset="0.5" stop-color="#a7afb7"/>
+      <stop offset="1" stop-color="#cfd5da"/>
+    </linearGradient>
+    <!-- Check esmeralda #009D71 com brilho -->
+    <linearGradient id="esmeralda" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#19c08f"/>
+      <stop offset="0.55" stop-color="#009D71"/>
+      <stop offset="1" stop-color="#007a58"/>
+    </linearGradient>
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#003d2c" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Ponte em inox, translucida, ao fundo -->
+  <g opacity="0.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- torres -->
+    <rect x="132" y="118" width="22" height="250" rx="5" fill="url(#inoxVert)" stroke="#8c959e" stroke-width="2"/>
+    <rect x="358" y="118" width="22" height="250" rx="5" fill="url(#inoxVert)" stroke="#8c959e" stroke-width="2"/>
+    <!-- cabos principais -->
+    <path d="M40 300 Q 92 210 143 122" stroke="url(#inox)" stroke-width="9"/>
+    <path d="M143 122 Q 256 330 369 122" stroke="url(#inox)" stroke-width="9"/>
+    <path d="M369 122 Q 420 210 472 300" stroke="url(#inox)" stroke-width="9"/>
+    <!-- pendurais -->
+    <g stroke="#a9b1b9" stroke-width="4">
+      <line x1="184" y1="176" x2="184" y2="300"/>
+      <line x1="220" y1="206" x2="220" y2="300"/>
+      <line x1="256" y1="217" x2="256" y2="300"/>
+      <line x1="292" y1="206" x2="292" y2="300"/>
+      <line x1="328" y1="176" x2="328" y2="300"/>
+      <line x1="80" y1="234" x2="80" y2="300"/>
+      <line x1="112" y1="180" x2="112" y2="300"/>
+      <line x1="400" y1="180" x2="400" y2="300"/>
+      <line x1="432" y1="234" x2="432" y2="300"/>
+    </g>
+    <!-- tabuleiro -->
+    <rect x="24" y="298" width="464" height="24" rx="6" fill="url(#inox)" stroke="#8c959e" stroke-width="2"/>
+  </g>
+
+  <!-- Check esmeralda atravessando a ponte -->
+  <path d="M118 262 L 212 352 L 404 150"
+        fill="none" stroke="url(#esmeralda)" stroke-width="58"
+        stroke-linecap="round" stroke-linejoin="round" filter="url(#sombra)"/>
+  <!-- brilho no check -->
+  <path d="M132 258 L 212 334 L 392 146"
+        fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Tabuleiro translucido por cima: o check atravessa a ponte -->
+  <rect x="24" y="298" width="464" height="24" rx="6" fill="url(#inox)" opacity="0.55"/>
+  <rect x="24" y="298" width="464" height="24" rx="6" fill="none" stroke="#ffffff" stroke-opacity="0.5" stroke-width="2"/>
+</svg>

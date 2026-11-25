@@ -752,3 +752,9 @@ a.btn {
 .chat-prompt { max-height: 180px; }
 .chat-files { display: flex; gap: 8px; flex-wrap: wrap; }
 .chat-upload { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}

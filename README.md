@@ -1,4 +1,6 @@
-# verify-bridge
+<p align="center"><img src="docs/logo.svg" alt="Verify Bridge" width="160"></p>
+
+<h1 align="center">Verify Bridge</h1>
 
 [![Testes](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml/badge.svg)](https://github.com/Seraphim82/verify-bridge/actions/workflows/testes.yml)
 
